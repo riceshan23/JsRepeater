@@ -30,8 +30,7 @@ const commonConfig = {
 };
 
 const developmentConfig = {
-  mode: 'development',
-  devtool: 'source-map',
+  mode: 'development'
 };
 
 const productionConfig = {
