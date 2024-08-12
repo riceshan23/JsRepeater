@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Test JS Repeater</title>
+
+    <style>
+        .wrapper {
+            margin: 20px 20px;
+        }
+        .row {
+            margin-bottom:10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+    <form id="form1" method="post">
+        <div id="repeater">
+            <div data-repeater-list="group1">
+                <div data-repeater-item>
+
+                    <div class="row">
+                        <label for="text">text</label>
+                        <input id="text" type="text" name="text">
+                    </div>
+
+                    <div class="row">
+                        <label for="date">date</label>
+                        <input id="date" type="date" name="date">
+                    </div>
+
+                    <div class="row">
+                        <label for="time">time</label>
+                        <input id="time" type="time" name="time">
+                    </div>
+
+                    <div class="row">
+                        <label for="datetime-local">datetime-local</label>
+                        <input id="datetime-local" type="datetime-local" name="datetime-local">
+                    </div>
+
+                    <div class="row">
+                        <label for="number">number</label>
+                        <input id="number" type="number" name="number" pattern="\d*">
+                    </div>
+
+                    <div class="row">
+                        <label for="color">color</label>
+                        <input id="color" type="color" name="color">
+                    </div>
+
+                    <div class="row">
+                        <label for="select">select</label>
+                        <select id="select" name="select">
+                            <option value="option1">option1</option>
+                            <option value="option2">option2</option>
+                            <option value="option3">option3</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <label for="multiple">multiple</label>
+                        <select id="multiple" name="multiple[]" multiple>
+                            <option value="multiple-option1">multiple-option1</option>
+                            <option value="multiple-option2">multiple-option2</option>
+                            <option value="multiple-option3">multiple-option3</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <label for="textarea">textarea</label>
+                        <textarea id="textarea" name="textarea"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <label for="checkbox">checkbox</label>
+                        <input type="checkbox" name="checkbox[]" value="checkbox1">
+                        <input type="checkbox" name="checkbox[]" value="checkbox2">
+                        <input type="checkbox" name="checkbox[]" value="checkbox3">
+                    </div>
+
+                    <div class="row">
+                        <label for="checkbox-arr">checkbox-arr</label>
+                        <input type="checkbox" name="checkbox-arr[arr1][]" value="checkbox-arr1">
+                        <input type="checkbox" name="checkbox-arr[arr1][]" value="checkbox-arr2">
+                        <input type="checkbox" name="checkbox-arr[arr1][]" value="checkbox-arr3">
+                    </div>
+
+                    <div class="row">
+                        <label for="radio">radio</label>
+                        <input type="radio" name="radio" value="radio1">
+                        <input type="radio" name="radio" value="radio2">
+                        <input type="radio" name="radio" value="radio3">
+                    </div>
+
+                    <button type="button" data-repeater-delete>DELETE</button>
+
+                    <hr/>
+
+                </div>
+
+            </div>
+
+            <div class="row">
+                <button type="button" data-repeater-create>ADD ITEM</button>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <button>SUBMIT</button>
+        </div>
+
+    </form>
+
+</div>
+
+
+<script src="src/index.js"></script>
+<script>
+    const repeaterDom = document.getElementById('repeater');
+
+    const repeaterInst = JsRepeater.create(repeaterDom, {
+        onItemAdded: el => console.log('Item added!'),
+        onItemRemoved: el => console.log('Item removed!'),
+    })
+
+    repeaterInst.addItems([
+        {
+            data: {
+                text: 'test1',
+                date: '2000-11-22',
+                time: '11:22',
+                "datetime-local": '2000-11-22T33:44',
+                number: 99,
+                color: '#ff8811',
+                select: 'option2',
+                multiple: [
+                    'multiple-option1',
+                    'multiple-option3'
+                ],
+                textarea: "textarea textarea textarea\ntextarea",
+                checkbox: [
+                    'checkbox1', 'checkbox3'
+                ],
+                "checkbox-arr": [
+                    'checkbox-arr1', 'checkbox-arr3'
+                ],
+                radio: 'radio2'
+            }
+        }
+    ])
+
+    const formDom = document.getElementById('form1')
+    formDom.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        new FormData(formDom).forEach((value, key) => console.log(key, value))
+    })
+</script>
+</body>
+
+</html>
