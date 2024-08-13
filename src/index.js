@@ -382,7 +382,7 @@ const JsRepeater = (function()
 
       self.get = () => {
         if (isMultiple) {
-          return element.selectedOptions.map(options => options.value)
+          return Array.from(element.selectedOptions).map(options => options.value)
         }
 
         return element.value;
