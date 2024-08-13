@@ -4,6 +4,11 @@ Building on the concept of [JqueryRepeater](https://github.com/DubFriend/jquery.
 
 JsRepeater rewrites the 'name' attribute to avoid naming conflicts within the same form. In the following example, the form item names will be redefined with the 'name' attribute as `MyGroup[0][name]` and `MyGroup[0][age]`. Checkboxes will have `[]` added at the end, so in this example, it would be `myGroup[0][course][]`.
 
+### Install
+
+```sh
+npm install jsrepeater --save
+```
 
 ### Initialization
 
