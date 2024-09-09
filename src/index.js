@@ -123,11 +123,11 @@ const JsRepeater = (function()
     {
       setItemValues(newItem, fig);
 
+      setIndexes();
+
       if (_onItemAdded) {
         _onItemAdded(newItem, fig);
       }
-
-      setIndexes();
     }
 
     function setItemValues(newItem, fig)
@@ -202,6 +202,11 @@ const JsRepeater = (function()
     {
       if (_animationMs <= 0) {
 
+        listEl.removeChild(item);
+        setIndexes();
+        if (_onItemRemoved) {
+          _onItemRemoved(item);
+        }
       } else {
 
         item.style.overflow = 'hidden';
@@ -211,15 +216,15 @@ const JsRepeater = (function()
         item.offsetHeight;
 
         item.style.maxHeight = '0';
-      }
 
-      setTimeout(() => {
-        listEl.removeChild(item);
-        setIndexes();
-        if (_onItemRemoved) {
-          _onItemRemoved(item);
-        }
-      }, _animationMs);
+        setTimeout(() => {
+          listEl.removeChild(item);
+          setIndexes();
+          if (_onItemRemoved) {
+            _onItemRemoved(item);
+          }
+        }, _animationMs);
+      }
     }
 
     function getValues()
