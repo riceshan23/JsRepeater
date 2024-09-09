@@ -127,6 +127,7 @@ const JsRepeater = (function()
 
       if (_onItemAdded) {
         _onItemAdded(newItem, fig);
+        setIndexes();
       }
     }
 
@@ -206,6 +207,7 @@ const JsRepeater = (function()
         setIndexes();
         if (_onItemRemoved) {
           _onItemRemoved(item);
+          setIndexes();
         }
       } else {
 
@@ -222,6 +224,7 @@ const JsRepeater = (function()
           setIndexes();
           if (_onItemRemoved) {
             _onItemRemoved(item);
+            setIndexes();
           }
         }, _animationMs);
       }
