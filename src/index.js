@@ -21,6 +21,7 @@ const JsRepeater = (function()
       deleteInputName:    _deleteInputName = '',
       deleteInputField:   _deleteInputField = '',
       onItemAdded:        _onItemAdded = null,
+      afterItemAdded:     _afterItemAdded = null,
       onItemRemoved:      _onItemRemoved = null,
     } = options;
 
@@ -35,6 +36,7 @@ const JsRepeater = (function()
 
     if (!isObject(_defaultValues)) throw new Error('Parameter [defaultValues] type error (object)');
     if (_onItemAdded !== null && !isFunction(_onItemAdded)) throw new Error('Parameter [onItemAdded] type error (function)');
+    if (_afterItemAdded !== null && !isFunction(_afterItemAdded)) throw new Error('Parameter [afterItemAdded] type error (function)');
     if (_onItemRemoved !== null && !isFunction(_onItemRemoved)) throw new Error('Parameter [onItemRemoved] type error (function)');
     if (!isNumeric(_animationMs)) throw new Error('Parameter animationMs [animationMs] type error (Number)');
 
@@ -127,7 +129,12 @@ const JsRepeater = (function()
 
       if (_onItemAdded) {
         _onItemAdded(newItem, fig);
+
         setIndexes();
+      }
+
+      if (_afterItemAdded) {
+        _afterItemAdded(newItem, fig)
       }
     }
 
