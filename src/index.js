@@ -89,7 +89,13 @@ const JsRepeater = (function()
 
     function addItem(fig = {})
     {
-      if (!isObject(fig.data)) throw new Error('Function addItem Parameter type error (object)');
+      if (!isObject(fig.data)) {
+        if (!fig.data) {
+          fig.data = fig
+        } else {
+          throw new Error('Function addItem Parameter type error (object)');
+        }
+      }
 
       const newItem = itemTemplate.cloneNode(true);
 
