@@ -54,17 +54,9 @@ const JsRepeater = (function()
 
     if (_animationMs > 0) initializeAnimationCSS();
 
-    function getItems()
-    {
-      return Array.from(listEl.querySelectorAll('[data-repeater-item]'));
-    }
-
     function setIndexes()
     {
-      const items = getItems();
-      const groupName = listEl.dataset.repeaterList;
-
-      items.forEach((item, index) => {
+      Array.from(listEl.querySelectorAll('[data-repeater-item]')).forEach((item, index) => {
         item.dataset.itemName = `${groupName}[${index}]`;
         item.querySelectorAll('[name]').forEach(input => {
           let name = input.getAttribute('name');
@@ -73,7 +65,9 @@ const JsRepeater = (function()
 
           name = parseFormName(name)
 
-          const newName = `${groupName}[${index}][${name}]` + (matches ? '[]' : '');
+          if (!name.match(/\[.*\]$/)) name = `[${name}]`
+
+          const newName = `${groupName}[${index}]${name}`;
 
           input.setAttribute('name', newName);
         });
@@ -180,36 +174,20 @@ const JsRepeater = (function()
     {
       return Array.from(newItem.querySelectorAll('[name]')).find(input => {
         const name = input.getAttribute('name');
-        return parseFormName(name) == key;
+
+        const parseName = parseFormName(name)
+
+        if (parseName == key) return true;
+
+        // handle [xxx] = xxx
+        const matches = parseName.match(/^\[(.+)\]$/);
+        if (matches?.[1] && matches[1] == key) return true;
       });
     }
 
     function parseFormName(input)
     {
-      input = input.replace(`${groupName}[`, '[')
-
-      const matches = input.match(/(\[[^\]]*\]|[\w\-\_\:]+)/g);
-
-      if (!matches) return null;
-
-      for (let i = 0; i < matches.length; i++) {
-          const match = matches[i];
-
-          if (match === '[]' || /^\[\d+\]$/.test(match)) continue;
-
-          if (match.startsWith('[') && match.endsWith(']')) {
-              const content = match.slice(1, -1);
-              if (content.trim() !== '' && isNaN(content)) {
-                  return content;
-              }
-          } else {
-              if (match.trim() !== '' && isNaN(match)) {
-                  return match;
-              }
-          }
-      }
-
-      return null;
+      return input.replace(groupName, '').replace(/^\[\d+\]/, '')
     }
 
     function removeItem(item)
@@ -243,26 +221,13 @@ const JsRepeater = (function()
       }
     }
 
-    function getValues()
-    {
-      return getItems().map(item => {
-        const values = {};
-        item.querySelectorAll('[name]').forEach(input => {
-          const key = parseFormName(input.name);
-          if (values[key] === undefined) {
-            values[key] = FormInput.create(input).get();
-          }
-        });
-        return values;
-      });
-    }
-
     function genHiddenDeleteInput(itemEl)
     {
       if (_deleteInputName == '' || _deleteInputField == '') return false;
 
       const delFieldInput = getItemInput(itemEl, _deleteInputField)
-      if (delFieldInput.value != '')  {
+
+      if (delFieldInput && delFieldInput.value != '')  {
         const hiddenInput = document.createElement('input');
         hiddenInput.setAttribute('type', 'hidden');
         hiddenInput.setAttribute('name', _deleteInputName + '[]');
@@ -333,7 +298,6 @@ const JsRepeater = (function()
       addItem,
       addItems,
       removeItem,
-      getValues,
       clear,
       disable,
       enable,

@@ -1,9 +1,10 @@
+<!-- /assets/common/plugins/js/atai-repeater.test.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Test JS Repeater</title>
+    <title>Test Atai Repeater</title>
 
     <style>
         .wrapper {
@@ -78,16 +79,16 @@
 
                     <div class="row">
                         <label for="checkbox">checkbox</label>
-                        <input type="checkbox" name="checkbox[]" value="checkbox1">
-                        <input type="checkbox" name="checkbox[]" value="checkbox2">
-                        <input type="checkbox" name="checkbox[]" value="checkbox3">
+                        <input type="checkbox" name="[checkbox][]" value="checkbox1">
+                        <input type="checkbox" name="[checkbox][]" value="checkbox2">
+                        <input type="checkbox" name="[checkbox][]" value="checkbox3">
                     </div>
 
                     <div class="row">
                         <label for="checkbox-arr">checkbox-arr</label>
-                        <input type="checkbox" name="checkbox-arr[arr1][]" value="checkbox-arr1">
-                        <input type="checkbox" name="checkbox-arr[arr1][]" value="checkbox-arr2">
-                        <input type="checkbox" name="checkbox-arr[arr1][]" value="checkbox-arr3">
+                        <input type="checkbox" name="[checkbox-arr][arr1][]" value="checkbox-arr1">
+                        <input type="checkbox" name="[checkbox-arr][arr1][]" value="checkbox-arr2">
+                        <input type="checkbox" name="[checkbox-arr][arr1][]" value="checkbox-arr3">
                     </div>
 
                     <div class="row">
@@ -96,8 +97,6 @@
                         <input type="radio" name="radio" value="radio2">
                         <input type="radio" name="radio" value="radio3">
                     </div>
-
-                    <button type="button" data-repeater-delete>DELETE</button>
 
                     <hr/>
 
@@ -120,9 +119,9 @@
 </div>
 
 
-<script src="src/index.js"></script>
+<script src="./atai-repeater.pubsub.js"></script>
 <script>
-    const repeaterDom = document.getElementById('repeater');
+    const repeaterDom = document.getElementById('repeater')
 
     const defaultValues = {
         text: 'test1',
@@ -181,123 +180,12 @@
     // add item 2
     repeaterInst.addItems(items)
 
-    let rptValues
-
     const formDom = document.getElementById('form1')
     formDom.addEventListener('submit', function(event) {
         event.preventDefault();
 
-        rptValues = repeaterInst.getValues()
-
-        console.log('rptValue', rptValues)
-
-        const formDataInst = new FormData(formDom);
-
-        const formData = parseFormData(Array.from(formDataInst));
-        console.log('formData', formData)
-
-        console.log('');
-        console.log('compare rptvalue[0] and item[0]')
-        if (deepEqual(rptValues[0], defaultValues)) {
-            console.log('rptvalue[0] is equal to item[0]');
-        } else {
-            console.error('rptvalue[0] is not equal to item[0]');
-        }
-
-        console.log('');
-        console.log('compare rptvalue[1] and item[1]')
-        if (deepEqual(rptValues[1], items[0].data)) {
-            console.log('rptvalue[1] is equal to item[1]');
-        } else {
-            console.error('rptvalue[1] is not equal to item[1]');
-        }
-
-        console.log('');
-        console.log('compare formData[0] and item[0]')
-        if (deepEqual(formData[0], defaultValues)) {
-            console.log('formData[0] is equal to item[0]');
-        } else {
-            console.error('formData[0] is not equal to item[0]');
-        }
-
-        console.log('');
-        console.log('compare formData[1] and item[1]')
-        if (deepEqual(formData[1], items[0].data)) {
-            console.log('formData[1] is equal to item[1]');
-        } else {
-            console.error('formData[1] is not equal to item[1]');
-        }
-
+        new FormData(formDom).forEach((value, key) => console.log(key, value))
     })
-
-    function parseFormData(input) {
-        const result = [];
-        const groupMap = new Map();
-
-        input.forEach(([key, value]) => {
-            const [, groupIndex, field] = key.match(/group1\[(\d+)\]\[([^\]]+)\]/);
-            
-            if (!groupMap.has(groupIndex)) {
-                groupMap.set(groupIndex, {});
-            }
-            
-            const group = groupMap.get(groupIndex);
-            
-            const fieldName = field.endsWith('[]') ? field.slice(0, -2) : field;
-            
-            if (field.endsWith('[]') || ['multiple', 'checkbox', 'checkbox-arr'].includes(fieldName)) {
-                if (!group[fieldName]) {
-                    group[fieldName] = [];
-                }
-                group[fieldName].push(value);
-            } else {
-                group[fieldName] = value;
-            }
-        });
-
-        groupMap.forEach((group) => {
-            result.push(group);
-        });
-
-        return result;
-    }
-
-    function deepEqual(obj1, obj2)
-    {
-        if (obj1 == obj2) return true;
-        if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) return false;
-
-        const keys1 = Object.keys(obj1);
-        const keys2 = Object.keys(obj2);
-
-        if (keys1.length !== keys2.length) return false;
-
-        for (const key of keys1) {
-            const val1 = obj1[key];
-            const val2 = obj2[key];
-
-            if (Array.isArray(val1) && Array.isArray(val2)) {
-                if (!arrayEqual(val1, val2)) {
-                    console.error(`${key}: ${val1} not equal to ${val2}`)
-                    return false;
-                }
-            } else if (!deepEqual(val1, val2)) {
-                console.error(`${key}: ${val1} not equal to ${val2}`)
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    function arrayEqual(arr1, arr2)
-    {
-        if (arr1.length !== arr2.length) return false;
-        for (let i = 0; i < arr1.length; i++) {
-            if (!deepEqual(arr1[i], arr2[i])) return false;
-        }
-        return true;
-    }
 </script>
 </body>
 
