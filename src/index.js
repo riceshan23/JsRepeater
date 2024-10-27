@@ -239,6 +239,40 @@ const JsRepeater = (function()
       return false;
     }
 
+    function getValues()
+    {
+      const inputs = mainElement.querySelectorAll('[name]')
+      const formData = new FormData()
+
+      inputs.forEach(input => formData.append(input.name, input.value))
+
+      return parseToNestedArray(formData)
+    }
+    function parseToNestedArray(formData) {
+    const result = {};
+    const entries = Object.entries(Object.fromEntries(formData.entries()));
+    
+    for (const [key, value] of entries) {
+        const paths = key.match(/[^\[\]]+/g) || [key];  // 修改正則以捕獲所有路徑部分
+        let current = result;
+        
+        paths.forEach((path, index) => {
+            const isLast = index === paths.length - 1;
+            if (isLast) {
+                current[path] = value;
+            } else {
+                // 檢查下一個路徑是否為數字
+                current[path] = current[path] || (!isNaN(paths[index + 1]) ? [] : {});
+                current = current[path];
+            }
+        });
+    }
+
+    return result;  // 不再使用 Object.values()
+}
+
+
+
     function clear()
     {
       listEl.innerHTML = '';
@@ -302,6 +336,7 @@ const JsRepeater = (function()
       disable,
       enable,
       setIndexes,
+      getValues,
     };
   }
 
