@@ -3,6 +3,15 @@ const JsRepeater = (function()
   const isObject = item => typeof item === 'object' && !Array.isArray(item) && item !== null;
   const isFunction = item => typeof item === 'function';
   const isNumeric = item => !isNaN(parseFloat(item)) && isFinite(item);
+  const addWrap = name => {
+    if (name.match(/\[.*\]$/)) return name
+    return `[${name}]`
+  }
+  const removeWrap = name => {
+    const matches = name.match(/^\[([\w.-]+)\]$/);
+    if (matches?.[1]) return matches[1]
+    return name;
+  }
   const addCSSRule = (selector, rules) => {
     if (!window._repeaterAnimationSheet) {
       window._repeaterAnimationSheet = document.createElement('style');
@@ -65,7 +74,7 @@ const JsRepeater = (function()
 
           name = parseFormName(name)
 
-          if (!name.match(/\[.*\]$/)) name = `[${name}]`
+          name = addWrap(name)
 
           const newName = `${groupName}[${index}]${name}`;
 
@@ -78,14 +87,14 @@ const JsRepeater = (function()
     {
       if (!Array.isArray(array)) throw new Error('Function addItems Parameter type error (array)');
 
-      array.forEach(fig => addItem(fig))
+      array.forEach((fig, index) => addItem(fig, index))
     }
 
-    function addItem(fig = {})
+    function addItem(fig = {}, index = -1)
     {
       if (!isObject(fig.data)) {
         if (!fig.data) {
-          fig.data = fig
+          fig = {data: fig, ...fig}
         } else {
           throw new Error('Function addItem Parameter type error (object)');
         }
@@ -97,7 +106,7 @@ const JsRepeater = (function()
 
         listEl.appendChild(newItem);
 
-        _addItemAction(newItem, fig)
+        _addItemAction(newItem, fig, index)
       } else {
 
         newItem.style.maxHeight = '0';
@@ -114,16 +123,16 @@ const JsRepeater = (function()
           newItem.style.maxHeight = '';
           newItem.style.transition = '';
 
-          _addItemAction(newItem, fig)
+          _addItemAction(newItem, fig, index)
 
         }, _animationMs);
 
       }
     }
 
-    function _addItemAction(newItem, fig)
+    function _addItemAction(newItem, fig, index)
     {
-      setItemValues(newItem, fig);
+      setItemValues(newItem, fig, index);
 
       setIndexes();
 
@@ -138,19 +147,23 @@ const JsRepeater = (function()
       }
     }
 
-    function setItemValues(newItem, fig)
+    function setItemValues(newItem, fig, index)
     {
       const {
         data = {},
         extra = {},
       } = fig;
 
-      Object.keys(data).forEach(key => {
-        const input = getItemInput(newItem, key);
+      const flattenObj = flattenObject(data)
+
+      Object.keys(flattenObj).forEach(key => {
+
+        const findKey = `${groupName}[${index}]${key}`
+        const input = getItemInput(newItem, findKey);
 
         if (input) {
           const inputObj = FormInput.create(input)
-          inputObj.set(data[key])
+          inputObj.set(flattenObj[key])
 
 
           /*****************
@@ -169,25 +182,42 @@ const JsRepeater = (function()
         }
       });
     }
+    function flattenObject(obj, prefix = '') {
+      let result = {};
+      
+      for (const [key, value] of Object.entries(obj)) {
+        const newKey = prefix ? `${prefix}[${key}]` : `[${key}]`;
+        
+        if (value !== null && typeof value === 'object') {
+          const nested = flattenObject(value, newKey);
+          result = { ...result, ...nested };
+        } else {
+          result[newKey] = value;
+        }
+      }
+      
+      return result;
+    }
+
 
     function getItemInput(newItem, key)
     {
       return Array.from(newItem.querySelectorAll('[name]')).find(input => {
         const name = input.getAttribute('name');
 
-        const parseName = parseFormName(name)
+        let parseName = parseFormName(name)
+        let parseKey = parseFormName(key)
 
-        if (parseName == key) return true;
-
-        // handle [xxx] = xxx
-        const matches = parseName.match(/^\[(.+)\]$/);
-        if (matches?.[1] && matches[1] == key) return true;
+        if (parseName == parseKey) return true;
       });
     }
 
-    function parseFormName(input)
+    function parseFormName(inputName)
     {
-      return input.replace(groupName, '').replace(/^\[\d+\]/, '')
+      let fixedInputName = inputName.replace(groupName, '').replace(/^\[\d+\]/, '')
+      const matches = fixedInputName.match(/^\[([\w.-]+)\]$/)
+      if (!matches) return fixedInputName
+        return matches?.[1]
     }
 
     function removeItem(item)
@@ -249,27 +279,27 @@ const JsRepeater = (function()
       return parseToNestedArray(formData)
     }
     function parseToNestedArray(formData) {
-    const result = {};
-    const entries = Object.entries(Object.fromEntries(formData.entries()));
-    
-    for (const [key, value] of entries) {
-        const paths = key.match(/[^\[\]]+/g) || [key];  // 修改正則以捕獲所有路徑部分
+      const result = {};
+      const entries = Object.entries(Object.fromEntries(formData.entries()));
+      
+      for (const [key, value] of entries) {
+        const paths = key.match(/[^\[\]]+/g) || [key];
         let current = result;
         
         paths.forEach((path, index) => {
-            const isLast = index === paths.length - 1;
-            if (isLast) {
-                current[path] = value;
-            } else {
-                // 檢查下一個路徑是否為數字
-                current[path] = current[path] || (!isNaN(paths[index + 1]) ? [] : {});
-                current = current[path];
-            }
+          const isLast = index === paths.length - 1;
+          if (isLast) {
+            current[path] = value;
+          } else {
+            // check if next is numeric
+            current[path] = current[path] || (!isNaN(paths[index + 1]) ? [] : {});
+            current = current[path];
+          }
         });
-    }
+      }
 
-    return result;  // 不再使用 Object.values()
-}
+      return result;
+    }
 
 
 
