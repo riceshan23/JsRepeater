@@ -214,10 +214,12 @@ const JsRepeater = (function()
 
     function parseFormName(inputName)
     {
-      let fixedInputName = inputName.replace(groupName, '').replace(/^\[\d+\]/, '')
+      let regObj = new RegExp(groupName + '\[\d+\]');
+      let fixedInputName = inputName.replace(new RegExp(`${groupName}\\[\\d+\\]`, 'g'), '')
+
       const matches = fixedInputName.match(/^\[([\w.-]+)\]$/)
       if (!matches) return fixedInputName
-        return matches?.[1]
+      return matches?.[1]
     }
 
     function removeItem(item)
